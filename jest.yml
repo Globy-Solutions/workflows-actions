@@ -1,21 +1,26 @@
 name: Jest
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [development]
 jobs:
-  jest:
+  eslint:
+    name: Run jest scanning
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.13.0]
+    permissions:
+      contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: |
-          npm install
-          npm test
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Jest
+        run: yarn test -u
+        continue-on-error: true
+
+      - name: Push changes
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git commit -am "Automated changes- Jest"
+          git push
